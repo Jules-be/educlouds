@@ -1,4 +1,25 @@
 {% extends "base.html" %} 
 {% block title %} Borrower {%endblock%}
 {% block content %}
+<h2>Submit Request</h2>
+<form method="POST">
+    <div class="form-group">
+        <label for="requiredResources">Required Resources:</label>
+        <input type="text" class="form-control" id="requiredResources" name="requiredResources">
+    </div>
+    <div class="form-group">
+        <label for="estimatedWorkload">Estimated Workload:</label>
+        <input type="text" class="form-control" id="estimatedWorkload" name="estimatedWorkload">
+    </div>
+    <div class="form-group">
+        <label for="preferredOS">Preferred OS:</label>
+        <input type="text" class="form-control" id="preferredOS" name="preferredOS">
+    </div>
+    <button type="submit" class="btn btn-primary">Submit Request</button>
+</form>
+{% if message %}
+<div class="alert alert-success" role="alert">
+    {{ message }}
+</div>
+{% endif %}
 {% endblock%}

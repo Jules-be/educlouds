@@ -1,0 +1,26 @@
+{% extends "base.html" %} 
+{% block title %} View Resources {% endblock %}
+{% block content %}
+<div class="container">
+    <h2>List Resources</h2>
+    <table class="table table-striped">
+        <thead class="thead-dark">
+            <tr>
+                <th>Type</th>
+                <th>Specifications</th>
+                <th>Availability Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for resource in resources %}
+            <tr>
+                <td>{{ resource.type }}</td>
+                <td>{{ resource.specifications }}</td>
+                <td>{{ resource.availabilityStatus }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+</table>
+{% endblock %}

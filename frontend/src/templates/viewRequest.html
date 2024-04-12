@@ -1,0 +1,27 @@
+{% extends "base.html" %} 
+{% block title %} View Requests{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Borrower Requests</h1>
+    {% if requests %}
+        {% for request in requests %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Request</h5>
+                    <ul class="list-group">
+                        {% for resource in request.requiredResources %}
+                            <li class="list-group-item">Type: {{ resource.type }}, Specifications: {{ resource.specifications }}</li>
+                        {% endfor %}
+                    </ul>
+                    <p class="card-text mt-3"><strong>Estimated Workload:</strong> {{ request.estimatedWorkload }}</p>
+                    <p class="card-text"><strong>Preferred OS:</strong> {{ request.preferredOS }}</p>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No requests found.</p>
+    {% endif %}
+</div>
+</body>
+
+{% endblock %}
