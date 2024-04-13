@@ -1,32 +1,9 @@
 from flask import Flask, request, jsonify
 import paramiko
-import subprocess
-import os
 import uuid
+from file_verification import run_bandit, run_safety
 
 app = Flask(__name__)
-
-@app.route('/upload', methods=['POST'])
-def upload_file():
-    if 'file' not in request.files:
-        return 'No file part', 400
-    file = request.files['file']
-    if file.filename == '':
-        return 'No selected file', 400
-    if file:
-        filename = str(uuid.uuid4()) + '.py'
-        filepath = os.path.join('./uploads', filename)
-        file.save(filepath)
-
-    # SSH connection details
-    ssh_host = 'remote_host_ip'
-    ssh_user = 'remote_user'
-    ssh_key_path = '/path/to/ssh_key'
-
-    # Run the script in a Docker container on the remote machine
-    result = run_in_docker(filepath, ssh_host, ssh_user, ssh_key_path)
-
-    return jsonify(result), 200
 
 def check_docker_installed(host, username, password):
     try:

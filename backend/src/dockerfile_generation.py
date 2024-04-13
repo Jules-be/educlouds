@@ -10,4 +10,4 @@ def generate_dockerfile(required_python_version, additional_packages):
     with open('Dockerfile', 'w') as dockerfile:
         dockerfile.write(dockerfile_content)
 
-generate_dockerfile('3.8', ['numpy', 'pandas'])
+generate_dockerfile('4', ['numpy', 'pandas'])
