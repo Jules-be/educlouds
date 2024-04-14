@@ -1,4 +1,5 @@
 from flask import Flask
+from config import Config, DevelopmentConfig, ProductionConfig
 from flask_sqlalchemy import SQLAlchemy
 from .api.views import views
 from .api.auth import auth
@@ -9,19 +10,15 @@ from os import path
 db = SQLAlchemy()
 DB_NAME = "database.db"
 
-def create_app():
+def create_app(config_class=Config):
     app = Flask(__name__)
-    app.config['SECRET_KEY'] = 'Abdoul'
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_NAME}'  # Remove the space
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    
- 
+    app.config.from_object(config_class)
     db.init_app(app)
-        
+    
     # Register blueprints
     app.register_blueprint(views, url_prefix='/')
     app.register_blueprint(auth, url_prefix='/')
-    
+
     create_database(app)
 
     return app

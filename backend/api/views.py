@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for
+from ..docker_tasks import generate_dockerfile, check_docker_installed, run_in_docker
 
 views = Blueprint('views', __name__)
 
@@ -35,17 +36,19 @@ def view_resources():
     return render_template('viewResources.html', resources=lender_resources)
 
 # Routes for borrowers
-@views.route('/api/borrowers/submitRequest', methods=['GET', 'POST'])
 def submit_request():
     if request.method == 'POST':
+        # Get data from the form
         required_resources = request.form.get('requiredResources')
-        estimated_workload = request.form.get('estimatedWorkload')
+        python_version = request.form.get('pythonVersion')
+        required_dependencies = request.form.getlist('requiredDependencies')  # assuming dependencies are sent as a list
 
-        borrower_requests.append({
-            'requiredResources': required_resources,
-            'python_version': python_version,
-            'required_dependencies': required_dependencies,
-        })
+        # Assuming all data is validated and processed as needed
+        task_chain = (generate_dockerfile.s(python_version, required_dependencies) |
+                      check_docker_installed.s(host='example_host', username='user', password='pass') |
+                      run_in_docker.s(filepath='path_to_dockerfile', ssh_host='ssh_host', ssh_user='ssh_user', ssh_key_path='path_to_ssh_key')).apply_async()
+
+        # Redirect or handle the response appropriately
         return redirect(url_for('views.view_requests'))
     else:
         return render_template('borrower.html')
