@@ -1,4 +1,5 @@
 from backend import create_app
+from backend.celery_worker import celery
 
 app = create_app()
 
