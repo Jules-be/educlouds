@@ -60,12 +60,13 @@ def register():
         db.session.commit()
         
         # Redirect based on user type
+        '''
         if user_type == 'lender':
             flash('User registered successfully as Lender', category='success')
             return redirect(url_for('views.add_resource'))
         elif user_type == 'borrower':
             flash('User registered successfully as Borrower', category='success')
-            return redirect(url_for('views.submit_request'))
+            return redirect(url_for('views.submit_request'))'''
 
     # Render the registration form template
     return render_template("register.html")
