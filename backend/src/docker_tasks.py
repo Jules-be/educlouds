@@ -3,14 +3,14 @@ from celery.utils.log import get_task_logger
 import paramiko
 import uuid
 import os
-from .celery_worker import celery
+from ..celery_worker import celery
 
 logger = get_task_logger(__name__)
 
 @celery.task(bind=True)
 def generate_dockerfile(self, required_python_version, additional_packages):
     # Set the relative path to the requests directory
-    requests_dir = '../requests/'
+    requests_dir = '../../requests/'
     # Create a unique directory for this task within the requests directory
     request_dir = os.path.join(requests_dir, f'request_{self.request.id}')
     os.makedirs(request_dir, exist_ok=True)

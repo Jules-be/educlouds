@@ -1,17 +1,15 @@
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for
 import os 
 import uuid
-
-from .tasks import generate_dockerfile, check_docker_installed, run_in_docker
-
-from .security_checks import run_bandit, run_safety
+from ..src.docker_tasks import generate_dockerfile, check_docker_installed, run_in_docker
+from ..src.file_verification import run_bandit, run_safety
 
 views = Blueprint('views', __name__)
 
 lender_resources = []
 borrower_requests = []
 
-UPLOAD_FOLDER = '/path/to/uploads'
+UPLOAD_FOLDER = '../../requests/'
 
 # Home page
 @views.route('/')
@@ -66,10 +64,11 @@ def submit_request():
     # Generate Dockerfile asynchronously
     task_chain = (generate_dockerfile.s(python_version, required_dependencies, required_resources) | 
                   check_docker_installed.s(host='example_host', username='user', password='pass') | 
-                  run_in_docker.s(filepath=filepath, ssh_host='ssh_host', ssh_user='ssh_user', ssh_key_path='path_to_ssh_key')).apply_async()
-    
+                  run_in_docker.s(filepath=filepath, ssh_host='ssh_host', ssh_user='ssh_user', ssh_key_path='path_to_ssh_key'))
+    result = task_chain.apply_async()
+
     # Redirect the response 
-    return redirect(url_for('views.view_requests'))
+    return jsonify({"message": "Processing started", "task_id": result.id}), 202
 
 @views.route('/api/borrowers/viewRequests', methods=['GET'])
 def view_requests():

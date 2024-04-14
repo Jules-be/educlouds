@@ -1,13 +1,11 @@
 from flask import Flask
-from config import Config, DevelopmentConfig, ProductionConfig
-from flask_sqlalchemy import SQLAlchemy
+from config import Config
 from .api.views import views
 from .api.auth import auth
-from .models import Borrower, Lender, User
-from os import path
+from .database import db
+from flask import current_app
+import os
 
-# Define the DB
-db = SQLAlchemy()
 DB_NAME = "database.db"
 
 def create_app(config_class=Config):
@@ -23,11 +21,21 @@ def create_app(config_class=Config):
 
     return app
 
-# Script that checks db 
 def create_database(app):
-    if not path.exists('src/' + DB_NAME):
-        with app.app_context():
-            db.create_all()
-        print('Created Database!')
+    # Build the path for the database
+    db_path = os.path.join(app.instance_path, DB_NAME)
+    
+    # Ensure the instance folder exists
+    if not os.path.exists(app.instance_path):
+        os.makedirs(app.instance_path)
+    
+    # Check if the database file already exists
+    if not os.path.exists(db_path):
+        try:
+            with app.app_context():
+                db.create_all()
+            print('Created Database!')
+        except Exception as e:
+            current_app.logger.error(f'Failed to create database: {e}')
     else:
         print('Database already exists!')
