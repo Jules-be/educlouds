@@ -1,25 +1,49 @@
 {% extends "base.html" %} 
-{% block title %} Borrower {%endblock%}
+{% block title %} Borrower {% endblock %}
+
 {% block content %}
-<h2>Submit Request</h2>
-<form method="POST">
-    <div class="form-group">
-        <label for="requiredResources">Required Resources:</label>
-        <input type="text" class="form-control" id="requiredResources" name="requiredResources">
-    </div>
-    <div class="form-group">
-        <label for="estimatedWorkload">Estimated Workload:</label>
-        <input type="text" class="form-control" id="estimatedWorkload" name="estimatedWorkload">
-    </div>
-    <div class="form-group">
-        <label for="preferredOS">Preferred OS:</label>
-        <input type="text" class="form-control" id="preferredOS" name="preferredOS">
-    </div>
-    <button type="submit" class="btn btn-primary">Submit Request</button>
-</form>
-{% if message %}
-<div class="alert alert-success" role="alert">
-    {{ message }}
-</div>
-{% endif %}
-{% endblock%}
+    <h2>Submit Request</h2>
+
+    <form method="POST" enctype="multipart/form-data">
+        <!-- Upload Python File -->
+        <div class="form-group">
+            <label for="file">Upload Python File:</label>
+            <input type="file" class="form-control-file" id="file" name="file" accept=".py">
+        </div>
+
+        <!-- Dependencies -->
+        <div class="form-group">
+            <label for="dependencies">Dependencies:</label>
+            <input type="text" class="form-control" id="dependencies" name="dependencies">
+            <small class="form-text text-muted">Enter dependencies as a comma-separated list.</small>
+        </div>
+
+        <!-- Python Version -->
+        <div class="form-group">
+            <label for="pythonVersion">Python Version:</label>
+            <input type="text" class="form-control" id="pythonVersion" name="pythonVersion" placeholder="e.g., 3.9">
+            <small class="form-text text-muted">Specify the required Python version.</small>
+        </div>
+
+        <!-- Required Resources -->
+        <div class="form-group">
+            <label for="requiredResources">Required Resources:</label>
+            <select class="form-control" id="requiredResources" name="requiredResources">
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+            </select>
+            <small class="form-text text-muted">Select the level of required resources.</small>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-primary">Submit Request</button>
+    </form>
+
+    <!-- Success/Error Message -->
+    {% if message %}
+        <div class="alert alert-success" role="alert">
+            {{ message }}
+        </div>
+    {% endif %}
+{% endblock %}
