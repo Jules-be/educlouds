@@ -1,6 +1,6 @@
 from celery import Celery
 from flask import Flask
-from config import Config
+from config import CeleryConfig as Config
 
 # Assuming 'Config' or the actual Flask 'app' has the necessary CELERY configurations
 app = Flask(__name__)

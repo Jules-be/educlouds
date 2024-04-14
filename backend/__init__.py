@@ -9,7 +9,11 @@ import os
 DB_NAME = "database.db"
 
 def create_app(config_class=Config):
-    app = Flask(__name__)
+    name = __name__
+    app_dir = os.path.abspath(os.path.dirname(__file__))
+    parent_dir = os.path.abspath(os.path.join(app_dir, os.pardir))
+    template_dir = os.path.join(parent_dir, 'templates')
+    app = Flask(name, template_folder=template_dir)
     app.config.from_object(config_class)
     db.init_app(app)
     

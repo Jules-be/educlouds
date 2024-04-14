@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify, redirect, url_for
+from flask import Blueprint, render_template, request, jsonify, redirect, url_for, current_app as app
 import os 
 import uuid
 from ..src.docker_tasks import generate_dockerfile, check_docker_installed, run_in_docker
