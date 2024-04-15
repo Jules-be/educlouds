@@ -35,7 +35,7 @@ def view_resources():
     return render_template('viewResources.html', resources=lender_resources)
 
 # Routes for borrowers
-@views.route('/api/borrowers/submitRequest', methods=['GET', 'POST'])
+@views.route('/api/borrowers/submitRequest', methods=['POST'])
 def submit_request():
     # Check if 'file' is present in the request files
     if 'file' not in request.files:
@@ -67,9 +67,9 @@ def submit_request():
         
     # Generate Dockerfile asynchronously
     task_chain = (generate_dockerfile.s(python_version, required_dependencies, required_resources) | 
-                check_docker_installed.s(host='example_host', username='user', password='pass') | 
-                run_in_docker.s(filepath=filepath, ssh_host='ssh_host', ssh_user='ssh_user', ssh_key_path='path_to_ssh_key'))
-        
+                check_docker_installed.s(host='host', user='user', password='pass') | 
+                run_in_docker.s(filepath=filepath, host='host', user='user', password='pass'))
+
     # Apply the task asynchronously
     result = task_chain.apply_async()
     return render_template('borrower.html', message={'status': 'Processing started', 'task_id': result.id})

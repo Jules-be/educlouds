@@ -35,11 +35,11 @@ def generate_dockerfile(self, required_python_version, additional_packages):
 
 
 @celery.task(bind=True)
-def check_docker_installed(self, host, username, password):
+def check_docker_installed(self, host, user, password):
     try:
         ssh_client = paramiko.SSHClient()
         ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh_client.connect(host, username=username, password=password)
+        ssh_client.connect(host, username=user, password=password)
 
         stdin, stdout, stderr = ssh_client.exec_command('which docker')
         docker_path = stdout.read().decode().strip()
@@ -63,11 +63,11 @@ def check_docker_installed(self, host, username, password):
         return False
 
 @celery.task(bind=True)
-def run_in_docker(self, filepath, ssh_host, ssh_user, ssh_key_path):
+def run_in_docker(self, filepath, host, user, password):
     try:
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(ssh_host, username=ssh_user, key_filename=ssh_key_path)
+        ssh.connect(host, username=user, password=password)
 
         image_name = f'my_python_script_{uuid.uuid4()}'
         commands = [
