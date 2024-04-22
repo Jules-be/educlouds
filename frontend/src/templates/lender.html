@@ -1,24 +1,26 @@
 {% extends "base.html" %} 
-{% block title %} Lender {%endblock%}
+{% block title %} Lender {% endblock %}
 {% block content %}
 
-<form  method="POST", class="mt-5">
+<form method="POST" class="mt-5">
     <h2>Add Resource</h2>
     <div class="form-group">
-        <label for="type">Type:</label>
-        <input type="text" class="form-control" id="type" name="type">
+        <label for="type">Resource Type</label>
+        <select class="form-control" id="type" name="type">
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+        </select>
     </div>
 
     <div class="form-group">
-        <label for="specifications">Specifications:</label>
-        <input type="text" class="form-control"  id="specifications" name="specifications">
-    </div>
-
-    <div class="form-group">
-        <label for="availabilityStatus">Availability Status:</label>
-        <input type="text"  class="form-control" id="availabilityStatus" name="availabilityStatus"><br><br>
+        <label for="availabilityStatus">Availability Status</label>
+        <select class="form-control" id="availabilityStatus" name="availabilityStatus">
+            <option value="Available">Available</option>
+            <option value="Unavailable">Unavailable</option>
+        </select>
     </div>
 
     <button type="submit" class="btn btn-primary">Add Resource</button>
 </form>
-{% endblock%}
+{% endblock %}

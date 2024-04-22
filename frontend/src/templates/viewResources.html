@@ -6,17 +6,15 @@
     <table class="table table-striped">
         <thead class="thead-dark">
             <tr>
-                <th>Type</th>
-                <th>Specifications</th>
+                <th>Resource Type</th> <!-- Corrected spelling -->
                 <th>Availability Status</th>
             </tr>
-        </thead>
+        </thead>        
         <tbody>
             {% for resource in resources %}
             <tr>
-                <td>{{ resource.type }}</td>
-                <td>{{ resource.specifications }}</td>
-                <td>{{ resource.availabilityStatus }}</td>
+                <td>{{ resource.resource_type }}</td>
+                <td>{{ resource.availability_status }}</td>
             </tr>
             {% endfor %}
         </tbody>
