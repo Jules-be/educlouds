@@ -2,7 +2,7 @@ from celery.utils.log import get_task_logger
 import paramiko
 import uuid
 import os
-from ..celery_worker import celery
+from backend.celery_worker import celery
 
 logger = get_task_logger(__name__)
 
