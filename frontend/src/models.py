@@ -33,7 +33,7 @@ class Lender(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     resource_type = db.Column(db.Enum("High", "Medium", "Low", name="resource_type_enum"), nullable=False)
     specification = db.Column(db.String(150), nullable=False)
-    availability_status = db.Column(db.Enum("Available", "Not available", name="availability_status_enum"), nullable=False)
+    availability_status = db.Column(db.Enum('Available', 'Unavailable', name='availability_status_enum'), nullable=False)
     user_id = db.Column(db.String(150), db.ForeignKey('user.id'))
     user = db.relationship("User", back_populates="lender")
 

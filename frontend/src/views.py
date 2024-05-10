@@ -83,13 +83,15 @@ def allowed_file(filename):
 @login_required
 def submit_request():
     # Return the form page if the method is GET
-    if request.method != 'POST':
-        return render_template('borrower.html', user=current_user)
-    
-    # Check user permissions
+       # Check user permissions
     if current_user.user_type_id != 2:  # Assuming 2 is the ID for 'borrower'
         flash("Unauthorized: Only borrowers can submit requests", category='error')
         return redirect(url_for('views.home'))
+    
+    if request.method != 'POST':
+        return render_template('borrower.html', user=current_user)
+    
+ 
     
     # File handling
     if 'file' not in request.files:
