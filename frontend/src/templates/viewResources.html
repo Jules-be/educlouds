@@ -1,12 +1,17 @@
-{% extends "base.html" %} 
-{% block title %} View Resources {% endblock %}
+{% extends "base.html" %}
+
+{% block title %}View Resources{% endblock %}
+
 {% block content %}
-<div class="container">
-    <h2>List Resources</h2>
+<div class="container mt-4">
+    <h2 class="mb-4">List of Resources</h2>
+
+    {% if resources %}
     <table class="table table-striped">
         <thead class="thead-dark">
             <tr>
-                <th>Resource Type</th> <!-- Corrected spelling -->
+                <th>Resource Type</th>
+                <th>Specification</th>
                 <th>Availability Status</th>
             </tr>
         </thead>        
@@ -14,11 +19,16 @@
             {% for resource in resources %}
             <tr>
                 <td>{{ resource.resource_type }}</td>
+                <td>{{ resource.specification }}</td>
                 <td>{{ resource.availability_status }}</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+    {% else %}
+    <div class="alert alert-info">
+        No resources found.
+    </div>
+    {% endif %}
 </div>
-</table>
 {% endblock %}

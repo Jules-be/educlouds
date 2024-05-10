@@ -24,15 +24,32 @@
         </button>
         <div class="collapse navbar-collapse" id="navbar">
             <div class="navbar-nav">
-                <a class="nav-item nav-link" id="login" href='/api/users/login'>Login</a>
-                <a class="nav-item nav-link" id="signUp" href='/api/users/register'>Register</a>
-                <a class="nav-item nav-link" id="logout" href='/api/users/logout'>Logout</a>
-                <a class="nav-item nav-link" id="addResources" href='/api/lenders/addResource'>Lender</a>
-                <a class="nav-item nav-link" id="submitRequest" href='/api/borrowers/submitRequest'>Borrower</a>
-                <a class="nav-item nav-link" id="viewRequests" href='/api/borrowers/viewRequests'>View Requests</a>
-                <a class="nav-item nav-link" id="viewResources" href='/api/lenders/viewResources'>List Resources</a>
                 <a class="nav-item nav-link" id="home" href='/'>Home</a>
+                <div class="dropdown">
+                    <a class="nav-item nav-link dropdown-toggle" href="#" id="userActions" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">User</a>
+                    <div class="dropdown-menu" aria-labelledby="userActions">
+                        <a class="dropdown-item" href='/api/users/login'>Login</a>
+                        <a class="dropdown-item" href='/api/users/register'>Register</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href='/api/users/logout'>Logout</a>
+                    </div>
+                </div>
+                <div class="dropdown">
+                    <a class="nav-item nav-link dropdown-toggle" href="#" id="borrowerActions" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Borrower</a>
+                    <div class="dropdown-menu" aria-labelledby="borrowerActions">
+                        <a class="dropdown-item" href='/api/borrowers/submitRequest'>Submit Request</a>
+                        <a class="dropdown-item" href='/api/borrowers/viewRequests'>View Requests</a>
+                    </div>
+                </div>
+                <div class="dropdown">
+                    <a class="nav-item nav-link dropdown-toggle" href="#" id="lenderActions" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Lender</a>
+                    <div class="dropdown-menu" aria-labelledby="lenderActions">
+                        <a class="dropdown-item" href='/api/lenders/addResource'>Add Resource</a>
+                        <a class="dropdown-item" href='/api/lenders/viewResources'>List Resources</a>
+                    </div>
+                </div>
             </div>
+            
         </div>
     </nav>
     {% with messages = get_flashed_messages(with_categories=true) %}
