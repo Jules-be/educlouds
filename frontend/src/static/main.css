@@ -98,4 +98,10 @@
     width: 100%;
     max-width: 330px;
   }
-  
+  body, h1, h2, h3, h4, h5, h6, p, li {
+    color: black; /* Ensuring all text is black */
+}
+
+.card-header, .card-body {
+    color: black; /* Specific styles for card components */
+}

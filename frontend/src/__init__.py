@@ -2,6 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from os import path 
 from flask_login import LoginManager
+import os 
 #from datetime import timedelta
 
 # Define the DB
@@ -11,8 +12,13 @@ DB_NAME = "database.db"
 def create_app():
     app = Flask(__name__)
     app.config.from_pyfile('config.py')
-    app.config['UPLOAD_FOLDER'] = '/Users/abdoulabdillahi/Desktop/CSC890/Abdoul/educlouds/frontend/src/save_files'
+    
+    upload_folder = os.getenv('UPLOAD_FOLDER', '../src/save_files')     # Use an environment variable to define the upload path
+    app.config['UPLOAD_FOLDER'] = upload_folder
+    if not os.path.exists(upload_folder):                                                    # Ensure the upload folder exists
+        os.makedirs(upload_folder)
     app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+    
     db.init_app(app)
     
     

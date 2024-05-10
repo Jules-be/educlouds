@@ -107,7 +107,11 @@ def submit_request():
 
     # Save the file
     filename = secure_filename(file.filename)
-    file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+    upload_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+    
+    # Ensure the directory exists
+    os.makedirs(os.path.dirname(upload_path), exist_ok=True)
+    file.save(upload_path)
     
     # Form data processing
     python_version = request.form.get('pythonVersion')
@@ -115,7 +119,6 @@ def submit_request():
     estimated_workload = request.form.get('estimatedWorkload')
     
     # Database record creation
-    
     new_request = Borrower(
         required_dependencies=required_dependencies,
         estimated_workload=estimated_workload,
@@ -130,13 +133,12 @@ def submit_request():
 
     # This should be inside the function, handling GET requests or when there's no POST
     #return render_template('borrower.html', user=current_user)
-
+# Example Flask route
 @views.route('/api/borrowers/viewRequests', methods=['GET'])
 @login_required
 def view_requests():
-    
     if current_user.user_type_id != 2:
         flash('Unauthorized: Only borrowers can view requests', category='error')
         return redirect(url_for('views.home'))
-    requests = Borrower.query.filter_by(user_id=current_user.borrower.id).all()
-    return render_template('viewRequest.html', user=current_user, requests=requests)
+    requests = Borrower.query.filter_by(user_id=current_user.id).all()
+    return render_template('viewRequest.html', requests=requests)

@@ -3,25 +3,25 @@
 {% block title %}View Requests{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container mt-4" style="color: black;"> <!-- Ensure text color is black -->
     <h1 class="text-center mb-4">Borrower Requests</h1>
     {% if requests %}
         {% for request in requests %}
             <div class="card mb-4">
-                <div class="card-header">
-                    Request ID: {{ request.id }} <!-- Assuming each request has a unique identifier -->
+                <div class="card-header" style="color: black;">
+                    Request ID: {{ request.id }}
                 </div>
-                <div class="card-body">
+                <div class="card-body" style="color: black;">
                     <h5 class="card-title">Request Details</h5>
                     <ul class="list-group list-group-flush">
                         {% if request.get_dependencies %}
                             {% for dependency in request.get_dependencies() %}
-                                <li class="list-group-item">
+                                <li class="list-group-item" style="color: black;">
                                     <strong>Dependency:</strong> {{ dependency }}
                                 </li>
                             {% endfor %}
                         {% else %}
-                            <li class="list-group-item">No dependencies listed.</li>
+                            <li class="list-group-item" style="color: black;">No dependencies listed.</li>
                         {% endif %}
                     </ul>
                     <p class="card-text mt-3"><strong>Estimated Workload:</strong> {{ request.estimated_workload }}</p>
@@ -31,7 +31,7 @@
             </div>
         {% endfor %}
     {% else %}
-        <div class="alert alert-info text-center">
+        <div class="alert alert-info text-center" style="color: black;">
             No requests found.
         </div>
     {% endif %}
