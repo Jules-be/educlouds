@@ -2,7 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from os import path 
 from flask_login import LoginManager
-from datetime import timedelta
+#from datetime import timedelta
 
 # Define the DB
 db = SQLAlchemy()
@@ -11,6 +11,8 @@ DB_NAME = "database.db"
 def create_app():
     app = Flask(__name__)
     app.config.from_pyfile('config.py')
+    app.config['UPLOAD_FOLDER'] = '/Users/abdoulabdillahi/Desktop/CSC890/Abdoul/educlouds/frontend/src/save_files'
+    app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
     db.init_app(app)
     
     

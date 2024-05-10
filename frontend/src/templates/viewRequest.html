@@ -8,17 +8,25 @@
     {% if requests %}
         {% for request in requests %}
             <div class="card mb-4">
+                <div class="card-header">
+                    Request ID: {{ request.id }} <!-- Assuming each request has a unique identifier -->
+                </div>
                 <div class="card-body">
                     <h5 class="card-title">Request Details</h5>
-                    <ul class="list-group">
-                        {% for dependency in request.get_dependencies() %}
-                            <li class="list-group-item">
-                                <strong>Dependency:</strong> {{ dependency }}
-                            </li>
-                        {% endfor %}
+                    <ul class="list-group list-group-flush">
+                        {% if request.get_dependencies %}
+                            {% for dependency in request.get_dependencies() %}
+                                <li class="list-group-item">
+                                    <strong>Dependency:</strong> {{ dependency }}
+                                </li>
+                            {% endfor %}
+                        {% else %}
+                            <li class="list-group-item">No dependencies listed.</li>
+                        {% endif %}
                     </ul>
                     <p class="card-text mt-3"><strong>Estimated Workload:</strong> {{ request.estimated_workload }}</p>
                     <p class="card-text"><strong>Python Version:</strong> {{ request.python_version }}</p>
+                    <p class="card-text"><strong>Status:</strong> {{ request.status | default('Pending', true) }}</p>
                 </div>
             </div>
         {% endfor %}

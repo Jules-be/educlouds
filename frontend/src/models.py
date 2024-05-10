@@ -43,5 +43,6 @@ class Borrower(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     python_version = db.Column(db.String(20), nullable=False)
     required_dependencies = db.Column(db.Text, nullable=False)
+    estimated_workload=db.Column(db.Enum("High", "Medium", "Low", name="estimated_workload", nullable=False))
     user_id = db.Column(db.String(150), db.ForeignKey('user.id'))
     user = db.relationship("User", back_populates="borrower")
