@@ -12,7 +12,6 @@ DB_NAME = "database.db"
 def create_app():
     app = Flask(__name__)
     app.config.from_pyfile('config.py')
-    
     upload_folder = os.getenv('UPLOAD_FOLDER', '../src/save_files')     # Use an environment variable to define the upload path
     app.config['UPLOAD_FOLDER'] = upload_folder
     if not os.path.exists(upload_folder):                                                    # Ensure the upload folder exists

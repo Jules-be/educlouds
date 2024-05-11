@@ -12,8 +12,6 @@ from flask import current_app
 views = Blueprint('views', __name__)
 
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png','jpg'}
-lender_resources = []
-borrower_requests = []
 
 
 @views.route('/', methods=['POST', 'GET'])
