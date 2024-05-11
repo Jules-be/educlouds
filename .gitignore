@@ -6,3 +6,4 @@ instance/
 .env
 *.ini
 dump.rdb
+frontend/src/config.py
