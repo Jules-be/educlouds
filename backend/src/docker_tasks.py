@@ -7,11 +7,11 @@ from backend.celery_worker import celery
 logger = get_task_logger(__name__)
 
 @celery.task(bind=True)
-def generate_dockerfile(self, required_python_version, additional_packages):
+def generate_dockerfile(request_id, required_python_version, additional_packages):
     # Set the relative path to the requests directory
     requests_dir = '../../requests/'
     # Create a unique directory for this task within the requests directory
-    request_dir = os.path.join(requests_dir, f'request_{self.request.id}')
+    request_dir = os.path.join(requests_dir, f'request_{request_id}')
     os.makedirs(request_dir, exist_ok=True)
 
     # Define the path for the Dockerfile within the new directory
@@ -35,7 +35,7 @@ def generate_dockerfile(self, required_python_version, additional_packages):
 
 
 @celery.task(bind=True)
-def check_docker_installed(self, host, user, password):
+def check_docker_installed(host, user, password):
     try:
         ssh_client = paramiko.SSHClient()
         ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -79,11 +79,16 @@ def run_in_docker(self, filepath, host, user, password):
         output = ""
         for command in commands:
             stdin, stdout, stderr = ssh.exec_command(command)
-            output += stdout.read().decode('utf-8')
-            error = stderr.read().decode('utf-8')
-            if error:
-                ssh.close()
-                return {'error': error}
+            # Wait for the command to complete
+            stdout.channel.recv_exit_status()
+            # Read outputs
+            command_output = stdout.read().decode('utf-8')
+            command_error = stderr.read().decode('utf-8')
+            if command_error:
+                logger.error(f'Error during command {command}: {command_error}')
+                continue  # Continue with the next command, handle error appropriately
+            output += command_output
+
 
         ssh.close()
         return {'output': output}

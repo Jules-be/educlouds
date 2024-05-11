@@ -2,6 +2,7 @@ from flask import Flask
 from config import Config
 from .api.views import views
 from .api.auth import auth
+from .api.list import list
 from .database import db
 from flask import current_app
 import os
@@ -16,10 +17,11 @@ def create_app(config_class=Config):
     app = Flask(name, template_folder=template_dir)
     app.config.from_object(config_class)
     db.init_app(app)
-    
+
     # Register blueprints
     app.register_blueprint(views, url_prefix='/')
     app.register_blueprint(auth, url_prefix='/')
+    app.register_blueprint(list, url_prefix='/')
 
     create_database(app)
 
