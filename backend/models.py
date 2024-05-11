@@ -1,5 +1,5 @@
 from enum import Enum
-from . import db
+from .database import db
 from sqlalchemy import ForeignKey
 from flask_login import UserMixin
 from sqlalchemy.orm import relationship
@@ -9,20 +9,11 @@ import uuid
 class UserType(db.Model):
     __tablename__ = 'user_type'
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # Corrected ForeignKey reference
-    project_details = db.Column(db.String(255))
-
-class User(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    user_type = db.Column(db.Enum('lender', 'borrower', name='user_type'))  # Corrected enum definition
-    email = db.Column(db.String(150), unique=True)
-    password = db.Column(db.String(150))
     name = db.Column(db.String(150), unique=True, nullable=False)
     users = db.relationship("User", order_by="User.id", back_populates="user_type")
 
     LENDER = 1
     BORROWER = 2
-
 
 class User(db.Model, UserMixin):
     __tablename__ = 'user'
@@ -34,7 +25,6 @@ class User(db.Model, UserMixin):
     lender = db.relationship("Lender", back_populates="user", uselist=False)
     borrower = db.relationship("Borrower", back_populates="user", uselist=False)
 
-
 class Lender(db.Model):
     __tablename__ = 'lender'
     id = db.Column(db.Integer, primary_key=True)
@@ -43,7 +33,6 @@ class Lender(db.Model):
     availability_status = db.Column(db.Enum('Available', 'Unavailable', name='availability_status_enum'), nullable=False)
     user_id = db.Column(db.String(150), db.ForeignKey('user.id'))
     user = db.relationship("User", back_populates="lender")
-
 
 class Borrower(db.Model):
     __tablename__ = 'borrower'

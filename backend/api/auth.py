@@ -23,20 +23,6 @@ def register():
         return handle_register_post()
 
     return render_template("register.html", user=current_user)
-
-        # Create new user
-        new_user = User(user_type=user_type, email=email, password=generate_password_hash(password, method='pbkdf2:sha256'))
-        db.session.add(new_user)
-        db.session.commit()
-        
-        # Redirect based on user type
-        '''
-        if user_type == 'lender':
-            flash('User registered successfully as Lender', category='success')
-            return redirect(url_for('views.add_resource'))
-        elif user_type == 'borrower':
-            flash('User registered successfully as Borrower', category='success')
-            return redirect(url_for('views.submit_request'))'''
     
 def handle_register_post():
     user_type_id = int(request.form.get('user_type_id'))

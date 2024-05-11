@@ -1,45 +1,36 @@
 from flask import Flask
-from config import Config
-from .api.views import views
-from .api.auth import auth
-from .database import db
-from flask import current_app
-import os
+from flask_sqlalchemy import SQLAlchemy
+import os 
 
+db = SQLAlchemy()
 DB_NAME = "database.db"
 
-def create_app(config_class=Config):
-    name = __name__
-    app_dir = os.path.abspath(os.path.dirname(__file__))
-    parent_dir = os.path.abspath(os.path.join(app_dir, os.pardir))
-    template_dir = os.path.join(parent_dir, 'templates')
-    app = Flask(name, template_folder=template_dir)
-    app.config.from_object(config_class)
+def create_app():
+    app = Flask(__name__)
+    app.config.from_pyfile('../config.py')
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///src/' + DB_NAME
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
     db.init_app(app)
-    
-    # Register blueprints
-    app.register_blueprint(views, url_prefix='/')
-    app.register_blueprint(auth, url_prefix='/')
 
-    create_database(app)
-
+    with app.app_context():
+        create_database()
     return app
 
-def create_database(app):
-    # Build the path for the database
-    db_path = os.path.join(app.instance_path, DB_NAME)
-    
-    # Ensure the instance folder exists
-    if not os.path.exists(app.instance_path):
-        os.makedirs(app.instance_path)
-    
-    # Check if the database file already exists
-    if not os.path.exists(db_path):
-        try:
-            with app.app_context():
-                db.create_all()
-            print('Created Database!')
-        except Exception as e:
-            current_app.logger.error(f'Failed to create database: {e}')
+def create_database():
+    if not os.path.exists(DB_NAME):
+        db.create_all()
+        populate_user_type()
+        print('Created Database!')
     else:
         print('Database already exists!')
+
+def populate_user_type():
+    from .models import UserType
+    if UserType.query.get(1) is None:
+        lender = UserType(id=1, name='Lender')
+        db.session.add(lender)
+    if UserType.query.get(2) is None:
+        borrower = UserType(id=2, name='Borrower')
+        db.session.add(borrower)
+    db.session.commit()
