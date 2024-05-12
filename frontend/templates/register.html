@@ -1,0 +1,30 @@
+{% extends "base.html" %} 
+{% block title %} Register Educloud {% endblock %}
+{% block content %}
+
+<div class="vh-100 d-flex justify-content-center align-items-center">
+    <div class="text-center" style="width: 20rem;">
+        <h1 class="h3 mb-3 font-weight-normal">Register Educloud</h1>
+        <form method="POST">
+            <div class="form-group">
+                <select class="form-control" id="user_type_id" name="user_type_id">
+                    <option value="1">Lender</option>
+                    <option value="2">Borrower</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="email" class="sr-only">Email Address</label>
+                <input type="email" id="email" name="email" class="form-control" placeholder="Enter email" required autofocus>
+            </div>
+
+            <div class="form-group">
+                <label for="password" class="sr-only">Create Password</label>
+                <input type="password" id="password" name="password" class="form-control" placeholder="Enter password" required>
+            </div>
+            <button class="btn btn-lg btn-primary btn-block" type="submit">Register</button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
