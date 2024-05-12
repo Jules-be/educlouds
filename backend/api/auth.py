@@ -25,13 +25,7 @@ def register():
     return render_template("register.html", user=current_user)
     
 def handle_register_post():
-    print("Received form data:", request.form)
-
     user_type_id = request.form.get('user_type_id')
-    if user_type_id == 'lender':
-        user_type_id = 1
-    else:
-        user_type_id = 2
     if user_type_id is None:
         flash('User type is required.', category='error')
         return render_template("register.html", user=current_user)

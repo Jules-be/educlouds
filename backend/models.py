@@ -54,9 +54,3 @@ class Borrower(db.Model):
     
 #     def set_dependencies(self, dependencies_list):
 #         self.dependencies = json.dumps(dependencies_list)
-
-# class Ressource(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-#     resource_type = db.Column(db.Enum('low', 'medium', 'high', name='resource_types'), default='medium')
-#     available = db.Column(db.Boolean, default=True)
