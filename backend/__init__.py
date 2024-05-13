@@ -4,6 +4,7 @@ from config import Config
 from .api.views import views
 from .api.auth import auth
 from .api.list import list
+from .api.requests import req_blueprint
 from .database import db
 from flask import current_app
 from .models import User
@@ -16,7 +17,7 @@ def create_app(config_class=Config):
     app_dir = os.path.abspath(os.path.dirname(__file__))
     parent_dir = os.path.abspath(os.path.join(app_dir, os.pardir))
     template_dir = os.path.join(parent_dir, 'templates')
-    upload_folder = os.getenv('UPLOAD_FOLDER', '../src/save_files')
+    upload_folder = os.getenv('UPLOAD_FOLDER', 'requests')
     if not os.path.exists(upload_folder):
         os.makedirs(upload_folder)
     app = Flask(name, template_folder=template_dir)
@@ -29,6 +30,7 @@ def create_app(config_class=Config):
     app.register_blueprint(views, url_prefix='/')
     app.register_blueprint(auth, url_prefix='/')
     app.register_blueprint(list, url_prefix='/')
+    app.register_blueprint(req_blueprint, url_prefix='/request')
 
     create_database(app)
 

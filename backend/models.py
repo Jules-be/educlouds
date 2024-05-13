@@ -2,6 +2,7 @@ from enum import Enum
 from .database import db
 from sqlalchemy import ForeignKey
 from flask_login import UserMixin
+import json
 import uuid
 
 class UserType(db.Model):
@@ -41,16 +42,18 @@ class Borrower(db.Model):
     user_id = db.Column(db.String(150), db.ForeignKey('user.id'))
     user = db.relationship("User", back_populates="borrower")
 
-# class Request(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-#     request_file = db.Column(db.String(255), nullable=False)
-#     dependencies = db.Column(db.String(500), default=json.dumps([]))
-#     python_version = db.Column(db.String(10), default="3.8")
-#     status = db.Column(db.Enum('initiated', 'running', 'done', name='request_status'), default='initiated')
+class Request(db.Model):
+    __tablename__ = 'request'
+    id = db.Column(db.Integer, primary_key=True)
+    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    request_file = db.Column(db.String(255), nullable=True)
+    dependencies = db.Column(db.String(500), default=json.dumps([]))
+    python_version = db.Column(db.String(10), default="3.8")
+    estimated_workload = db.Column(db.Enum('High', 'Medium', 'Low', name='workload_levels'), nullable=False)
+    status = db.Column(db.Enum('initiated', 'running', 'done', 'error', name='request_status'), default='initiated')
     
-#     def get_dependencies(self):
-#         return json.loads(self.dependencies)
+    def get_dependencies(self):
+        return json.loads(self.dependencies)
     
-#     def set_dependencies(self, dependencies_list):
-#         self.dependencies = json.dumps(dependencies_list)
+    def set_dependencies(self, dependencies_list):
+        self.dependencies = json.dumps(dependencies_list)

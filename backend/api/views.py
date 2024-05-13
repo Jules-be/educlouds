@@ -86,8 +86,6 @@ def submit_request():
     if request.method != 'POST':
         return render_template('borrower.html', user=current_user)
     
- 
-    
     # File handling
     if 'file' not in request.files:
         flash("No file part", category='error')
