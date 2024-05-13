@@ -47,16 +47,16 @@ def add_resource():
         elif not specification:
             flash("Specification is required", category='error')
         else:
-               new_resource = Lender(
+            new_resource = Lender(
                 resource_type=resource_type,
                 specification=specification,
                 availability_status=availability_status,
                 user_id = current_user.id 
-               )
-               db.session.add(new_resource)
-               db.session.commit()
-               flash("Resource added successfully", category='success')
-               return redirect(url_for('views.view_resources'))
+            )
+            db.session.add(new_resource)
+            db.session.commit()
+            flash("Resource added successfully", category='success')
+            return redirect(url_for('views.view_resources'))
     return render_template('lender.html', user=current_user)
            
 

@@ -48,11 +48,6 @@ def generate_dockerfile(request_id, required_python_version, additional_packages
     RUN ls -al /app
     """
 
-    # # Add pip install command if there are packages to install
-    # if additional_packages:
-    #     formatted_packages = ' '.join(additional_packages)
-    #     dockerfile_content += f"RUN pip install --no-cache-dir {formatted_packages}\n"
-
     dockerfile_content += f'CMD ["python", "{request_id}.py"]\n'
 
     # Write the Dockerfile
@@ -190,3 +185,32 @@ def check_docker_status(request_id, host, username, keypath):
         except Exception as e:
             logger.error(f"Exception in checking Docker status: {e}")
             return {'status': 'error', 'message': str(e)}
+
+def transfer_files_from_remote(request_id, host, username, keypath):
+    local_request_dir = os.path.join(current_app.instance_path, 'requests', f'request_{request_id}')
+
+    if not os.path.exists(local_request_dir):
+        raise FileNotFoundError("Script file or Dockerfile not found")
+
+    # Establish SSH connection
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh.connect(host, username=username, key_filename=keypath)
+
+    # Transfer files using SFTP
+    sftp = ssh.open_sftp()
+
+    # Define the remote directory path where files will be uploaded
+    remote_dir = f"/home/Jules/requests/request_{request_id}"
+
+    try:
+        sftp.mkdir(remote_dir)
+    except IOError as e:
+        print(f"Failed to create directory {remote_dir}: {e}")
+
+    sftp.get(os.path.join(remote_dir, f"request_{request_id}_run_error.txt"), os.path.join(local_request_dir, f"error.txt"))
+    sftp.get(os.path.join(remote_dir, f"request_{request_id}_run_output.txt"), os.path.join(local_request_dir, f"output.txt"))
+    sftp.close()
+    ssh.close()
+    logger.info(f"Files transferred successfully to {local_request_dir}")
+    return {"status": "success", "message": f"Files transferred to {local_request_dir}"}

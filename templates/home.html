@@ -16,7 +16,7 @@
                 <button type="submit" class="btn btn-dark btn-lg">LEND</button>
             </form>
         {% elif user_type == "borrower" %}
-            <form action="{{ url_for('views.submit_request') }}" method="get" class="d-inline-block mx-2">
+            <form action="{{ url_for('requests.new_request') }}" method="post" class="d-inline-block mx-2">
                 <button type="submit" class="btn btn-dark btn-lg">BORROW</button>
             </form>
         {% endif %}

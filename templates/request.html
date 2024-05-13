@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
-{% block title %}Submit Borrower Request{% endblock %}
+{% block title %}Submit Request{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-    <h2 class="mb-4">Submit Request</h2>
-    <form method="POST" enctype="multipart/form-data">
+    <h2 class="mb-4">Submit New Request</h2>
+    <form method="POST" action="/request/new" enctype="multipart/form-data">
         <div class="mb-3">
             <label for="fileUpload" class="form-label">File Upload</label>
             <input type="file" class="form-control" id="fileUpload" name="file" required>
@@ -16,23 +16,18 @@
         </div>
         <div class="mb-3">
             <label for="dependencies" class="form-label">Dependencies</label>
-            <textarea class="form-control" id="dependencies" name="dependencies" placeholder="e.g., pandas, numpy"></textarea>
+            <textarea class="form-control" id="dependencies" name="dependencies" placeholder="List dependencies separated by commas, e.g., pandas, numpy"></textarea>
         </div>
         <div class="mb-3">
             <label for="estimatedWorkload" class="form-label">Estimated Workload</label>
             <select class="form-select" id="estimatedWorkload" name="estimated_workload" required>
-                <option value="" disabled selected>Select Workload</option>
+                <option value="" disabled selected>Select Workload Level</option>
                 <option value="High">High</option>
                 <option value="Medium">Medium</option>
                 <option value="Low">Low</option>
             </select>
         </div>
-        <button type="submit" class="btn btn-primary">Send</button>
+        <button type="submit" class="btn btn-primary">Submit Request</button>
     </form>
-    {% if message %}
-    <div class="alert alert-success mt-3" role="alert">
-        {{ message }}
-    </div>
-    {% endif %}
 </div>
 {% endblock %}
