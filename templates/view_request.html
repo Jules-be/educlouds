@@ -3,7 +3,7 @@
 {% block title %}View Requests{% endblock %}
 
 {% block content %}
-<div class="container mt-4" style="color: black;"> <!-- Ensure text color is black -->
+<div class="container mt-4" style="color: black;">
     <h1 class="text-center mb-4">Borrower Requests</h1>
     {% if requests %}
         {% for request in requests %}
@@ -14,7 +14,7 @@
                 <div class="card-body" style="color: black;">
                     <h5 class="card-title">Request Details</h5>
                     <ul class="list-group list-group-flush">
-                        {% if request.get_dependencies %}
+                        {% if request.get_dependencies() %}
                             {% for dependency in request.get_dependencies() %}
                                 <li class="list-group-item" style="color: black;">
                                     <strong>Dependency:</strong> {{ dependency }}
@@ -27,6 +27,11 @@
                     <p class="card-text mt-3"><strong>Estimated Workload:</strong> {{ request.estimated_workload }}</p>
                     <p class="card-text"><strong>Python Version:</strong> {{ request.python_version }}</p>
                     <p class="card-text"><strong>Status:</strong> {{ request.status | default('Pending', true) }}</p>
+                    {% if request.status == 'done' or request.status == 'error' %}
+                        <a href="{{ url_for('request.download_result', request_id=request.id) }}" class="btn btn-primary">
+                            Download Result
+                        </a>
+                    {% endif %}
                 </div>
             </div>
         {% endfor %}

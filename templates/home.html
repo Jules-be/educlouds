@@ -1,8 +1,25 @@
-{% extends "base.html" %} 
+{% extends "base.html" %}
+
 {% block title %} Home {% endblock %}
+
 {% block content %}
-    <h3 align="center">Welcome to Educloud</h3><br>
-    <h2 align="center">Empowering Education Through Shared Computing</h2> <br>
+<div class="container text-center my-5">
+    <h1 class="mb-4">Welcome to Educloud!</h1>
+
+    <h2>Welcome, {{ user_name }}!</h2>
     <p>The goal of this project is to create a platform that connects personal computer owners with university students who need high computational power for education or innovative projects. 
-    Educloud utilizes Cloud Computing to share this computational power, making it widely available.</p>
+        Educloud utilizes Cloud Computing to share this computational power, making it widely available.</p>
+
+    <div class="my-4">
+        {% if user_type == "lender" %}
+            <form action="{{ url_for('views.add_resource') }}" method="get" class="d-inline-block mx-2">
+                <button type="submit" class="btn btn-dark btn-lg">LEND</button>
+            </form>
+        {% elif user_type == "borrower" %}
+            <form action="{{ url_for('requests.new_request') }}" method="post" class="d-inline-block mx-2">
+                <button type="submit" class="btn btn-dark btn-lg">BORROW</button>
+            </form>
+        {% endif %}
+    </div>
+</div>
 {% endblock %}

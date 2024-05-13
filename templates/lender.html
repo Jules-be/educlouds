@@ -1,35 +1,31 @@
 {% extends "base.html" %} 
-{% block title %} Lender {%endblock%}
+{% block title %} Lender {% endblock %}
 {% block content %}
 
-<form  method="POST", class="mt-5">
+<form method="POST" class="mt-5">
     <h2>Add Resource</h2>
     <div class="form-group">
-        <label for="type">Type:</label>
-        <input type="text" class="form-control" id="type" name="type">
-    </div>
-
-    <div class="form-group">
-        <label for="specifications">Specifications:</label>
-        <select class="form-control" id="specifications" name="specifications">
-            <option value="LOW">Low</option>
-            <option value="MEDIUM">Medium</option>
-            <option value="HIGH">High</option>
+        <label for="type">Resource Type</label>
+        <select class="form-control" id="type" name="type">
+            <option value="Low">Low</option>
+            <option value="Medium">Medium</option>
+            <option value="High">High</option>
         </select>
     </div>
 
     <div class="form-group">
-        <label>Availability Status:</label><br>
-        <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" name="availabilityStatus" id="available" value="Available">
-            <label class="form-check-label" for="available">Available</label>
-        </div>
-        <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" name="availabilityStatus" id="unavailable" value="Unavailable">
-            <label class="form-check-label" for="unavailable">Unavailable</label>
-        </div>
+        <label for="specification">Specification</label>
+        <input type="text" class="form-control" id="specification" name="specification" placeholder="Enter details e.g., processing speed, memory size">
+    </div>
+
+    <div class="form-group">
+        <label for="availabilityStatus">Availability Status</label>
+        <select class="form-control" id="availabilityStatus" name="availabilityStatus">
+            <option value="Available">Available</option>
+            <option value="Unavailable">Unavailable</option>
+        </select>
     </div>
 
     <button type="submit" class="btn btn-primary">Add Resource</button>
 </form>
-{% endblock%}
+{% endblock %}
