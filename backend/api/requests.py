@@ -65,7 +65,7 @@ def new_request():
         # Trigger Docker operations asynchronously
         docker_check = check_docker_installed(host, user, key_path)
         if not docker_check:
-            new_request.status = "failed"
+            new_request.status = "error"
             db.session.commit()
             flash("Docker is not installed on the specified host", category='error')
             return redirect(url_for('requests.new_request'))
@@ -73,21 +73,21 @@ def new_request():
         # Generate Dockerfile based on the Python version and dependencies
         dockerfile_task = generate_dockerfile(new_request.id, new_request.python_version, new_request.dependencies)
         if 'error' in dockerfile_task:
-            new_request.status = "failed"
+            new_request.status = "error"
             db.session.commit()
             flash("Failed to generate Dockerfile", category='error')
             return redirect(url_for('requests.new_request'))
 
         transfer_task = transfer_files_to_remote(new_request.id, host, user, key_path)
         if 'error' in transfer_task:
-            new_request.status = "failed"
+            new_request.status = "error"
             db.session.commit()
             flash("Failed to transfer files to remote host", category='error')
             return redirect(url_for('requests.new_request'))
 
         run_docker_task = run_docker_script(new_request.id, host, user, key_path)
         if 'error' in run_docker_task:
-            new_request.status = "failed"
+            new_request.status = "error"
             db.session.commit()
             transfer_files_from_remote(request_id, host, user, key_path)
             flash("Failed to run the script in Docker container", category='error')
