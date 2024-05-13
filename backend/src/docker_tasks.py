@@ -37,20 +37,23 @@ def generate_dockerfile(request_id, required_python_version, additional_packages
     request_dir = os.path.join(current_app.instance_path, 'requests', f'request_{request_id}')
     os.makedirs(request_dir, exist_ok=True)
 
-    # Script filename based on the request ID
-    script_filename = os.path.join(f"/tmp/request_{request_id}", f"{request_id}.py")
-
     # Define the path for the Dockerfile within the new directory
     dockerfile_path = os.path.join(request_dir, 'Dockerfile')
 
-    # Content of the Dockerfile
+    # Base
     dockerfile_content = f"""
     FROM python:{required_python_version}
     WORKDIR /app
     COPY . /app
-    RUN pip install --no-cache-dir {' '.join(additional_packages)}
-    CMD ["python", "{script_filename}"]
+    RUN ls -al /app
     """
+
+    # # Add pip install command if there are packages to install
+    # if additional_packages:
+    #     formatted_packages = ' '.join(additional_packages)
+    #     dockerfile_content += f"RUN pip install --no-cache-dir {formatted_packages}\n"
+
+    dockerfile_content += f'CMD ["python", "{request_id}.py"]\n'
 
     # Write the Dockerfile
     with open(dockerfile_path, 'w') as dockerfile:
@@ -59,38 +62,36 @@ def generate_dockerfile(request_id, required_python_version, additional_packages
     return {"message": "Dockerfile generated successfully", "path": dockerfile_path}
 
 def transfer_files_to_remote(request_id, host, username, keypath):
+    local_request_dir = os.path.join(current_app.instance_path, 'requests', f'request_{request_id}')
+    local_script_path = os.path.join(local_request_dir, f"{request_id}.py")
+    local_dockerfile_path = os.path.join(local_request_dir, 'Dockerfile')
+
+    if not os.path.exists(local_script_path) or not os.path.exists(local_dockerfile_path):
+        raise FileNotFoundError("Script file or Dockerfile not found")
+
+    # Establish SSH connection
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh.connect(host, username=username, key_filename=keypath)
+
+    # Transfer files using SFTP
+    sftp = ssh.open_sftp()
+
+    # Define the remote directory path where files will be uploaded
+    remote_dir = f"/home/Jules/requests/request_{request_id}"
+
     try:
-        local_request_dir = os.path.join(current_app.instance_path, 'requests', f'request_{request_id}')
-        local_script_path = os.path.join(local_request_dir, f"{request_id}.py")
-        local_dockerfile_path = os.path.join(local_request_dir, 'Dockerfile')
+        sftp.mkdir(remote_dir)
+    except IOError as e:
+        print(f"Failed to create directory {remote_dir}: {e}")
 
-        if not os.path.exists(local_script_path) or not os.path.exists(local_dockerfile_path):
-            raise FileNotFoundError("Script file or Dockerfile not found")
+    sftp.put(local_script_path, os.path.join(remote_dir, f"{request_id}.py"))
+    sftp.put(local_dockerfile_path, os.path.join(remote_dir, 'Dockerfile'))
+    sftp.close()
 
-        remote_dir = f"/tmp/request_{request_id}"
-
-        # Establish SSH connection
-        ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(host, username=username, key_filename=keypath)
-
-        # Create remote directory
-        stdin, stdout, stderr = ssh.exec_command(f"mkdir -p {remote_dir}")
-        stdout.channel.recv_exit_status()
-
-        # Transfer files using SFTP
-        sftp = ssh.open_sftp()
-        sftp.mkdir(remote_dir, mode=511)  # Ensure the directory is created with correct permissions
-        sftp.put(local_script_path, os.path.join(remote_dir, f"{request_id}.py"))
-        sftp.put(local_dockerfile_path, os.path.join(remote_dir, 'Dockerfile'))
-        sftp.close()
-
-        ssh.close()
-        logger.info(f"Files transferred successfully to {remote_dir}")
-        return {"status": "success", "message": f"Files transferred to {remote_dir}"}
-    except Exception as e:
-        logger.error(f"Failed to transfer files: {e}")
-        return {"status": "error", "message": str(e)}
+    ssh.close()
+    logger.info(f"Files transferred successfully to {remote_dir}")
+    return {"status": "success", "message": f"Files transferred to {remote_dir}"}
 
 def run_docker_script(request_id, host, username, keypath):
     try:
@@ -99,15 +100,15 @@ def run_docker_script(request_id, host, username, keypath):
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(host, username=username, key_filename=keypath)
 
-        remote_dir = f"/tmp/request_{request_id}"
+        remote_dir = f"/home/Jules/requests/request_{request_id}"
         remote_script_path = os.path.join(remote_dir, f"{request_id}.py")
         image_name = f"image_{request_id}"
-        output_prefix = remote_dir
+        output_prefix = os.path.join(remote_dir, f"request_{request_id}")
 
         # Commands to execute in the remote Docker
         commands = [
             f"cd {remote_dir} && docker build -t {image_name} -f Dockerfile . > {output_prefix}_build_output.txt 2> {output_prefix}_build_error.txt",
-            f"docker run --rm {image_name} python {remote_script_path} > {output_prefix}_run_output.txt 2> {output_prefix}_run_error.txt",
+            f"docker run --rm {image_name} python {request_id}.py > {output_prefix}_run_output.txt 2> {output_prefix}_run_error.txt",
             f"docker rmi {image_name}"
         ]
 
