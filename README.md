@@ -1,4 +1,7 @@
-# Educlouds
+# CSC 890 -AI Entrepreneurship 
+### Instructor: Hyo Jung Song (SFSU) 
+## Title: Educlouds 
+**Author(s):** Abdoulfatah Abdillahi & Jules Bertrand
 
 The goal of this project is to create a platform that connects personal computer owners with university students who need high computational power for education or innovative projects. 
 Educloud utilizes Cloud Computing to share this computational power, making it widely available.
