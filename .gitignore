@@ -1,8 +1,15 @@
 venv/
+.venv/
 __pycache__/
 *.pyc
+*.pyo
 instance/
 *.db
 .env
 *.ini
+.DS_Store
 dump.rdb
+.pytest_cache/
+migrations/__pycache__/
+backend/__pycache__/
+backend/tests/__pycache__/
