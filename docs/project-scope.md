@@ -68,3 +68,14 @@ For the portfolio version, Educlouds will focus on a reproducible local-first ar
 - Should execution be synchronous at first, or moved to a background worker immediately?
 - How should resource capacity be modeled in the first version?
 - Should pricing remain part of the portfolio version, or be deferred as future work?
+
+
+Step 1: Define first deployment scope
+Decide what the first hosted release actually includes.
+
+Recommended scope:
+
+web app only
+login/register
+resource and request flows that work without remote infra
+no complex remote host orchestration yet

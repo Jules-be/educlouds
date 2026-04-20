@@ -14,7 +14,11 @@ from .api.requests import req_blueprint
 DB_NAME = "database.db"
 
 def create_app(config_class=Config):
-    app = Flask(__name__, template_folder=get_template_dir())
+    app = Flask(
+        __name__,
+        template_folder=get_template_dir(),
+        static_folder=get_static_dir(),)
+
     app.config.from_object(config_class)
 
     ensure_directories(app)
@@ -24,6 +28,11 @@ def create_app(config_class=Config):
     create_database(app)
 
     return app 
+
+def get_static_dir():
+    backend_dir = os.path.abspath(os.path.dirname(__file__))
+    project_root = os.path.abspath(os.path.join(backend_dir, os.pardir))
+    return os.path.join(project_root, "static")
 
 
 

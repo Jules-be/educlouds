@@ -10,6 +10,9 @@ class Config:
     CELERY_RESULT_BACKEND = os.getenv("REDIS_URL", "redis://localhost:6379/0")
     UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", "requests")
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024
+    SSH_HOST = os.getenv("SSH_HOST")
+    SSH_USER = os.getenv("SSH_USER")
+    SSH_KEY_PATH = os.getenv("SSH_KEY_PATH", os.path.expanduser("~/.ssh/gcp"))
 
 
 class DevelopmentConfig(Config):
