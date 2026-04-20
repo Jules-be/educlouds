@@ -105,6 +105,63 @@ Goal: use your ML background to make the platform smarter.
 
 ## Practice Topics (to revisit)
 - [ ] Docker hands-on: write a script, build a Dockerfile, run it locally, see output
+- [ ] Celery hands-on: set up a simple task, run the worker, see async execution
+
+---
+
+## Concepts to Study
+
+### Celery + Redis (async job processing)
+
+**What it is:**
+Celery is a background task runner. Redis is the message queue between Flask and Celery.
+
+**The 3 pieces:**
+```
+Flask (waiter)  →  Redis (ticket board)  →  Celery worker (kitchen)
+"here's a job"     "task #7 waiting"        "running the job"
+```
+
+**Why we use it in Educlouds:**
+Docker jobs can take several minutes. Without Celery, the browser freezes waiting.
+With Celery, Flask responds immediately and the worker runs the job in the background.
+
+**How to run it locally (3 terminal windows):**
+```bash
+# Window 1 — Flask app
+python app.py
+
+# Window 2 — Celery worker
+celery -A app worker
+
+# Window 3 — Redis
+redis-server
+```
+
+**The key line of code:**
+```python
+# WITHOUT Celery (blocks browser for minutes)
+run_docker()
+
+# WITH Celery (returns immediately, runs in background)
+run_docker.delay()
+```
+
+`.delay()` is how you hand a task to Celery.
+
+**Interview questions to prepare:**
+- "How would you handle a long running task in a web app?"
+- "What's the difference between sync and async processing?"
+- "What happens if the Celery worker crashes mid-job?"
+- "How does the user know when their job is done?"
+
+**Your answers:**
+- Why Celery? → "Docker jobs take minutes. Celery decouples job submission from execution so Flask stays responsive."
+- Worker crashes? → "Celery has retry logic. Job stays in Redis queue and status is tracked in DB."
+- How does borrower know? → "Dashboard polls DB for status. Celery updates status to done/error when finished."
+
+**The one sentence that impresses interviewers:**
+> "I used Celery to decouple job submission from job execution, so the platform stays responsive regardless of how long the compute job takes."
 
 ---
 

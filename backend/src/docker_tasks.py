@@ -5,6 +5,76 @@ import os
 
 logger = get_task_logger(__name__)
 
+
+def run_job_pipeline(request_id, python_version, dependencies, host, user, key_path):
+    """
+    Celery task: runs the full Docker pipeline for a submitted job.
+    Called with .delay() so it runs in the background.
+    Steps:
+    1. Check Docker is installed on remote host
+    2. Generate Dockerfile
+    3. Transfer files to remote via SFTP
+    4. Run script inside Docker container
+    5. Download results back
+    6. Update job status in DB
+    """
+
+    from ..models import Request
+    from ..database import db
+
+    req = Request.query.get(request_id)
+    if not req:
+        logger.error(f"Request {request_id} not found")
+        return 
+
+    try:
+        req.status = "running"
+        db.session.commit()
+
+        if not check_docker_installed(host, user, key_path):
+            req.status = "error"
+            db.session.commit()
+            return
+        
+        result = generate_dockerfile(request_id=request_id, python_version = python_version,dependencies = dependencies)
+        if "error" in result:
+            req.status = "error"
+            db.session.commit()
+            return
+        
+        result = transfer_files_from_remote(request_id=request_id, host=host,  user = user,key_path= key_path)
+        if "error" in result:
+            req.status = "error"
+            db.session.commit()
+            return
+        
+        result = run_docker_script(request_id=request_id, host=host, user = user, key_path = key_path)
+        if result.get("status") == "error":
+            req.status = "error"
+            db.session.commit()
+            transfer_files_from_remote(request_id, host, user, key_path)
+            return 
+        
+        transfer_files_from_remote(request_id=request_id, host=host, user=user, key_path=key_path)
+        req.status = "Done"
+        db.session.commit()
+        logger.info(f"Job {request_id} completed successfully")
+    
+    except Exception as e:
+        logger.error(f"Job {request_id} failed: {e}")
+        req.satus = "error"
+        db.session.commit()
+
+
+def check_docker_installed(host, user, keypath):
+    t
+
+
+
+
+
+
+
 def check_docker_installed(host, user, keypath):
     try:
         ssh_client = paramiko.SSHClient()

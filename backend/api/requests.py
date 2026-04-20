@@ -1,5 +1,5 @@
 from flask import Blueprint, request, render_template, send_from_directory, jsonify, redirect, url_for, flash, current_app
-from backend.src.docker_tasks import generate_dockerfile, check_docker_installed, run_docker_script, transfer_files_to_remote, transfer_files_from_remote
+from backend.src.docker_tasks import run_job_pipeline
 from flask_login import login_required, current_user
 from ..models import Request
 from ..database import db
@@ -67,53 +67,29 @@ def new_request():
         db.session.commit()
         flash("Request submitted successfully", category='success')
 
-        # Perform Docker operations using Celery tasks
+        # Hand off Docker pipeline to Celery worker (runs in background)
         host = current_app.config['SSH_HOST']
         user = current_app.config['SSH_USER']
         key_path = current_app.config['SSH_KEY_PATH']
 
-        # Trigger Docker operations asynchronously
-        docker_check = check_docker_installed(host, user, key_path)
-        if not docker_check:
-            new_request.status = "error"
-            db.session.commit()
-            flash("Docker is not installed on the specified host", category='error')
-            return redirect(url_for('requests.new_request'))
-        
-        # Generate Dockerfile based on the Python version and dependencies
-        dockerfile_task = generate_dockerfile(new_request.id, new_request.python_version, new_request.dependencies)
-        if 'error' in dockerfile_task:
-            new_request.status = "error"
-            db.session.commit()
-            flash("Failed to generate Dockerfile", category='error')
-            return redirect(url_for('requests.new_request'))
+        run_job_pipeline(
+            new_request.id,
+            new_request.python_version,
+            new_request.dependencies,
+            host,
+            user,
+            key_path
+        )
 
-        transfer_task = transfer_files_to_remote(new_request.id, host, user, key_path)
-        if 'error' in transfer_task:
-            new_request.status = "error"
-            db.session.commit()
-            flash("Failed to transfer files to remote host", category='error')
-            return redirect(url_for('requests.new_request'))
-
-        run_docker_task = run_docker_script(new_request.id, host, user, key_path)
-        if 'error' in run_docker_task:
-            new_request.status = "error"
-            db.session.commit()
-            transfer_files_from_remote(request_id, host, user, key_path)
-            flash("Failed to run the script in Docker container", category='error')
-            return redirect(url_for('requests.view_requests'))
-
-        flash("Request submitted successfully", category='success')
-        new_request.status = "done"
-        db.session.commit()
-        transfer_files_from_remote(request_id, host, user, key_path)
+        flash("Job submitted! Check your requests page for status updates.", category='success')
         return redirect(url_for('request.view_requests'))
     return render_template('request.html')
+
 
 @login_required
 @req_blueprint.route('/view_requests', methods=['GET'])
 def view_requests():
-    if current_user.user_type_id != 2:
+    if current_user.user_type != "Borrower":
         flash('Unauthorized: Only borrowers can view requests', category='error')
         return redirect(url_for('views.home'))
 
