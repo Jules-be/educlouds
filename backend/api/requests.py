@@ -3,6 +3,7 @@ from backend.src.docker_tasks import generate_dockerfile, check_docker_installed
 from flask_login import login_required, current_user
 from ..models import Request
 from ..database import db
+from ..src.matching import find_best_lender
 import json
 import os
 
@@ -16,7 +17,7 @@ def allowed_file(filename):
 @req_blueprint.route('/new', methods= ['GET', 'POST'])
 def new_request():
     if request.method == 'POST':
-        if current_user.user_type_id != 2:
+        if current_user.user_type != "Borrower":
             flash("Unauthorized: Only borrowers can submit requests", category='error')
             return redirect(url_for('views.home'))
 
@@ -41,6 +42,15 @@ def new_request():
             status="initiated"
         )
         db.session.add(new_request)
+        db.session.commit()
+
+        # Match the request to the best available lender
+        matched_lender = find_best_lender(new_request.estimated_workload)
+        if not matched_lender:
+            flash("No available lenders at the moment. Please try again later.", category='error')
+            return redirect(url_for('request.new_request'))
+
+        new_request.lender_id = matched_lender.id
         db.session.commit()
 
         # Construct file path using the request ID

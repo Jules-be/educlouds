@@ -1,27 +1,41 @@
-def match_resources(requests, resources):
-    matches = []
-    for request in requests:
-        best_match = None
-        best_score = 0
-        for resource in resources:
-            if resource['Availability']:
-                score = calculate_compatibility_score(request, resource)
-                if score > best_score:
-                    best_match = resource
-                    best_score = score
-        matches.append((request['RequestID'], best_match['ResourceID']))
-    return matches
+from ..models import Lender
 
-def calculate_compatibility_score(request, resource):
-    score = 0
-    for req_resource in request['RequiredResources']:
-        for avail_resource in resource['Specifications']:
-            if req_resource['type'] == avail_resource['type']:
-                # Example scoring: +10 points for each matching resource type
-                score += 10
-                if req_resource['type'] == 'CPU':
-                    score += min(req_resource['cores'], avail_resource['cores'])
-                elif req_resource['type'] == 'RAM':
-                    score += min(req_resource['size'], avail_resource['size'])
 
-    return score
+# Score table: how well a lender's resource_type matches the job's estimated_workload
+# Higher score = better match
+MATCH_SCORE = {
+    "High":   {"High": 3, "Medium": 1, "Low": 0},
+    "Medium": {"High": 2, "Medium": 3, "Low": 1},
+    "Low":    {"High": 1, "Medium": 2, "Low": 3},
+}
+
+
+def find_best_lender(estimated_workload):
+    """
+    Given a job's estimated workload (High/Medium/Low),
+    find the best available lender from the database.
+    Returns the winning Lender object, or None if no lender is available.
+    """
+    available_lenders = Lender.query.filter_by(availability_status="Available").all()
+
+    if not available_lenders:
+        return None
+
+    best_lender = None
+    best_score = -1
+
+    for lender in available_lenders:
+        score = calculate_score(estimated_workload, lender.resource_type)
+        if score > best_score:
+            best_lender = lender
+            best_score = score
+
+    return best_lender
+
+
+def calculate_score(estimated_workload, resource_type):
+    """
+    Return a compatibility score between a job's workload and a lender's resource type.
+    Score ranges from 0 (incompatible) to 3 (perfect match).
+    """
+    return MATCH_SCORE.get(estimated_workload, {}).get(resource_type, 0)
