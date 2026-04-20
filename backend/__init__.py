@@ -9,15 +9,20 @@ from .api.views import views
 from .api.auth import auth
 from .api.list import list
 from .api.requests import req_blueprint
+from .celery_app import make_celery
 
 
 DB_NAME = "database.db"
+celery = None
 
 def create_app(config_class=Config):
+    global celery
+
     app = Flask(
         __name__,
         template_folder=get_template_dir(),
-        static_folder=get_static_dir(),)
+        static_folder=get_static_dir(),
+    )
 
     app.config.from_object(config_class)
 
@@ -26,8 +31,10 @@ def create_app(config_class=Config):
     register_blueprints(app)
     configure_login_manager(app)
     create_database(app)
+    celery = make_celery(app)
 
-    return app 
+    return app
+
 
 def get_static_dir():
     backend_dir = os.path.abspath(os.path.dirname(__file__))
@@ -67,21 +74,8 @@ def create_database(app):
         try:
             with app.app_context():
                 db.create_all()
-                populate_user_type()
             app.logger.info("Created database")
         except Exception as exc:
             app.logger.error(f"Failed to create database: {exc}")
     else:
         app.logger.info("Database already exists")
-
-def populate_user_type():
-    from .models import UserType
-
-    if UserType.query.get(UserType.LENDER) is None:
-        db.session.add(UserType(id=UserType.LENDER, name="Lender"))
-    
-    
-    if UserType.query.get(UserType.BORROWER) is None:
-        db.session.add(UserType(id=UserType.BORROWER, name="Borrower"))
-    
-    db.session.commit()
