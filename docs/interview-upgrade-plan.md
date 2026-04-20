@@ -103,10 +103,27 @@ Goal: use your ML background to make the platform smarter.
 
 ---
 
+## Practice Topics (to revisit)
+- [ ] Docker hands-on: write a script, build a Dockerfile, run it locally, see output
+
+---
+
 ## Session Log
 
 ### Session 1
 - Explored full codebase and identified all bugs and gaps
 - Fixed Bug 1: `list.py` field references corrected
 - Defined Phase 1–4 upgrade roadmap
-- Next: fix Bug 2 (UUID/Integer FK mismatch in models.py)
+
+### Session 2
+- Fixed Bug 2: FK type mismatch + redesigned schema (5 tables → 3)
+- Fixed Bug 3: SSH credentials moved to environment variables
+- Fixed Bug 4: removed duplicate routes and templates
+- Committed Phase 1, opened PR, merged into main
+- Started Phase 2: rewrote matching.py and wired into requests.py
+- Next: lender dashboard
+
+### Reminder for Phase 3
+- Build ML model that predicts job runtime based on workload, dependencies, python version, resource type
+- Use predictions to make matching smarter (pick lender most likely to finish fastest)
+- Show predicted runtime to borrower at submission time

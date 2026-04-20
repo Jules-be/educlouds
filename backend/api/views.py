@@ -1,12 +1,16 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
-from ..models import Lender
+from ..models import Lender, Request
 from ..database import db
 import os
 
 views = Blueprint('views', __name__)
 
 ALLOWED_EXTENSIONS = {'py'}
+
+
+
+
 
 @views.route('/', methods=['POST', 'GET'])
 @login_required
@@ -67,3 +71,17 @@ def view_resources():
     return render_template('viewResources.html', user=current_user, resources=resources)
 
 
+@views.route('/api/lenders/dashboard', methods=['GET'])
+@login_required
+def lender_dashboard():
+    if current_user.user_type != "Lender":
+        flash("Unauthorized: Only lenders can view this dashboard", category='error')
+        return redirect(url_for('views.home'))
+
+    lender = Lender.query.filter_by(user_id=current_user.id).first()
+    if not lender:
+        flash("No resource registered. Please add a resource first.", category='error')
+        return redirect(url_for('views.add_resource'))
+
+    assigned_jobs = Request.query.filter_by(lender_id=lender.id).order_by(Request.created_at.desc()).all()
+    return render_template('dashboard.html', user=current_user, lender=lender, jobs=assigned_jobs)
