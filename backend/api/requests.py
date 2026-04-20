@@ -58,9 +58,9 @@ def new_request():
         flash("Request submitted successfully", category='success')
 
         # Perform Docker operations using Celery tasks
-        host = '34.16.200.24'
-        user = 'Jules'
-        key_path = os.path.expanduser('~/.ssh/gcp')
+        host = current_app.config['SSH_HOST']
+        user = current_app.config['SSH_USER']
+        key_path = current_app.config['SSH_KEY_PATH']
 
         # Trigger Docker operations asynchronously
         docker_check = check_docker_installed(host, user, key_path)

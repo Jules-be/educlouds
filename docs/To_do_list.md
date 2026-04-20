@@ -36,7 +36,7 @@ Is this a job execution platform, a resource marketplace, or both?
 Will execution happen locally with Docker or on remote machines?
 Is matching automatic or manual in v1?
 
-## Milestone 1: Repo Hygiene
+## Milestone 1: Repo Hygiene (Done)
 Goal: make the repo look like engineering work, not a class submission.
 
 Tasks:
@@ -56,7 +56,7 @@ Definition of done:
 a new developer can clone the repo without polluted artifacts
 no secrets or local machine files are committed
 
-## Milestone 2: Configuration and Environment
+## Milestone 2: Configuration and Environment (Done)
 Goal: separate config from code.
 
 Tasks:
@@ -74,6 +74,24 @@ Definition of done:
 
 no hard-coded secrets
 app can start in dev/test/prod config modes
+
+
+       Done:
+       ## Milestone 2 Completed
+
+       ### What I changed
+       - Refactored `config.py` to use environment variables for secrets and infrastructure settings
+       - Added `DevelopmentConfig`, `TestingConfig`, and `ProductionConfig`
+       - Centralized upload and request size settings in config
+       - Refactored the Flask app factory to load config first and use helper functions for setup
+       - Separated startup concerns into smaller functions for readability and maintainability
+
+       ### Why it matters
+       This makes the application safer, easier to configure, and more portable across environments. It also improves startup clarity and aligns the project more closely   with common Flask engineering practices.
+
+       ### Known limitation
+       Database initialization still assumes a local SQLite workflow and should later be replaced with proper migrations.
+
 
 ## Milestone 3: Domain Model Redesign
 Goal: fix the data model so the app is coherent.
