@@ -3,9 +3,11 @@ from flask import current_app
 import paramiko
 import os
 
+from ..celery_app import celery
+
 logger = get_task_logger(__name__)
 
-
+@celery.task
 def run_job_pipeline(request_id, python_version, dependencies, host, user, key_path):
     """
     Celery task: runs the full Docker pipeline for a submitted job.
@@ -25,7 +27,7 @@ def run_job_pipeline(request_id, python_version, dependencies, host, user, key_p
     req = Request.query.get(request_id)
     if not req:
         logger.error(f"Request {request_id} not found")
-        return 
+        return
 
     try:
         req.status = "running"
@@ -35,44 +37,35 @@ def run_job_pipeline(request_id, python_version, dependencies, host, user, key_p
             req.status = "error"
             db.session.commit()
             return
-        
-        result = generate_dockerfile(request_id=request_id, python_version = python_version,dependencies = dependencies)
+
+        result = generate_dockerfile(request_id=request_id, python_version=python_version, dependencies=dependencies)
         if "error" in result:
             req.status = "error"
             db.session.commit()
             return
-        
-        result = transfer_files_from_remote(request_id=request_id, host=host,  user = user,key_path= key_path)
+
+        result = transfer_files_to_remote(request_id=request_id, host=host, username=user, keypath=key_path)
         if "error" in result:
             req.status = "error"
             db.session.commit()
             return
-        
-        result = run_docker_script(request_id=request_id, host=host, user = user, key_path = key_path)
+
+        result = run_docker_script(request_id=request_id, host=host, username=user, keypath=key_path)
         if result.get("status") == "error":
             req.status = "error"
             db.session.commit()
-            transfer_files_from_remote(request_id, host, user, key_path)
-            return 
-        
-        transfer_files_from_remote(request_id=request_id, host=host, user=user, key_path=key_path)
-        req.status = "Done"
+            transfer_files_from_remote(request_id, host, username=user, keypath=key_path)
+            return
+
+        transfer_files_from_remote(request_id=request_id, host=host, username=user, keypath=key_path)
+        req.status = "done"
         db.session.commit()
         logger.info(f"Job {request_id} completed successfully")
-    
+
     except Exception as e:
         logger.error(f"Job {request_id} failed: {e}")
-        req.satus = "error"
+        req.status = "error"
         db.session.commit()
-
-
-def check_docker_installed(host, user, keypath):
-    t
-
-
-
-
-
 
 
 def check_docker_installed(host, user, keypath):
@@ -102,7 +95,8 @@ def check_docker_installed(host, user, keypath):
         logger.error(f'Error: {e}')
         return False
 
-def generate_dockerfile(request_id, required_python_version, additional_packages):
+
+def generate_dockerfile(request_id, python_version, dependencies):
     # Set the relative path to the instance requests directory
     request_dir = os.path.join(current_app.instance_path, 'requests', f'request_{request_id}')
     os.makedirs(request_dir, exist_ok=True)
@@ -110,14 +104,15 @@ def generate_dockerfile(request_id, required_python_version, additional_packages
     # Define the path for the Dockerfile within the new directory
     dockerfile_path = os.path.join(request_dir, 'Dockerfile')
 
-    # Base
-    dockerfile_content = f"""
-    FROM python:{required_python_version}
-    WORKDIR /app
-    COPY . /app
-    RUN ls -al /app
-    """
+    import json
+    deps = json.loads(dependencies) if isinstance(dependencies, str) else dependencies
 
+    dockerfile_content = f"FROM python:{python_version}\n"
+    dockerfile_content += "WORKDIR /app\n"
+    dockerfile_content += "COPY . /app\n"
+    if deps:
+        pip_packages = " ".join(deps)
+        dockerfile_content += f"RUN pip install {pip_packages}\n"
     dockerfile_content += f'CMD ["python", "{request_id}.py"]\n'
 
     # Write the Dockerfile
@@ -125,6 +120,7 @@ def generate_dockerfile(request_id, required_python_version, additional_packages
         dockerfile.write(dockerfile_content)
     logger.info(f"Dockerfile generated at {dockerfile_path}")
     return {"message": "Dockerfile generated successfully", "path": dockerfile_path}
+
 
 def transfer_files_to_remote(request_id, host, username, keypath):
     local_request_dir = os.path.join(current_app.instance_path, 'requests', f'request_{request_id}')
@@ -158,6 +154,7 @@ def transfer_files_to_remote(request_id, host, username, keypath):
     logger.info(f"Files transferred successfully to {remote_dir}")
     return {"status": "success", "message": f"Files transferred to {remote_dir}"}
 
+
 def run_docker_script(request_id, host, username, keypath):
     try:
         # Establish SSH connection
@@ -166,7 +163,6 @@ def run_docker_script(request_id, host, username, keypath):
         ssh.connect(host, username=username, key_filename=keypath)
 
         remote_dir = f"/home/Jules/requests/request_{request_id}"
-        remote_script_path = os.path.join(remote_dir, f"{request_id}.py")
         image_name = f"image_{request_id}"
         output_prefix = os.path.join(remote_dir, f"request_{request_id}")
 
@@ -190,6 +186,7 @@ def run_docker_script(request_id, host, username, keypath):
     except Exception as e:
         logger.error(f"Exception during Docker run: {e}")
         return {"status": "error", "message": str(e)}
+
 
 def check_docker_status(request_id, host, username, keypath):
     from ..models import Request
@@ -256,6 +253,7 @@ def check_docker_status(request_id, host, username, keypath):
             logger.error(f"Exception in checking Docker status: {e}")
             return {'status': 'error', 'message': str(e)}
 
+
 def transfer_files_from_remote(request_id, host, username, keypath):
     local_request_dir = os.path.join(current_app.instance_path, 'requests', f'request_{request_id}')
 
@@ -278,8 +276,8 @@ def transfer_files_from_remote(request_id, host, username, keypath):
     except IOError as e:
         print(f"Failed to create directory {remote_dir}: {e}")
 
-    sftp.get(os.path.join(remote_dir, f"request_{request_id}_run_error.txt"), os.path.join(local_request_dir, f"error.txt"))
-    sftp.get(os.path.join(remote_dir, f"request_{request_id}_run_output.txt"), os.path.join(local_request_dir, f"output.txt"))
+    sftp.get(os.path.join(remote_dir, f"request_{request_id}_run_error.txt"), os.path.join(local_request_dir, "error.txt"))
+    sftp.get(os.path.join(remote_dir, f"request_{request_id}_run_output.txt"), os.path.join(local_request_dir, "output.txt"))
     sftp.close()
     ssh.close()
     logger.info(f"Files transferred successfully to {local_request_dir}")
