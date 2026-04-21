@@ -72,7 +72,7 @@ def new_request():
         user = current_app.config['SSH_USER']
         key_path = current_app.config['SSH_KEY_PATH']
 
-        run_job_pipeline(
+        run_job_pipeline.delay(
             new_request.id,
             new_request.python_version,
             new_request.dependencies,

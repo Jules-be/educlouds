@@ -1,14 +1,15 @@
-from celery import Celery 
-import os 
+from celery import Celery
+
+# Module-level instance so tasks can import it with @celery.task
+celery = Celery()
+
 
 def make_celery(app):
-    
     """
-     Connects Celery to the Flask app so tasks can access
-     the database and app config inside a worker.
+    Connects the module-level Celery instance to the Flask app so tasks
+    can access the database and app config inside a worker.
     """
-    celery = Celery(
-        app.import_name,
+    celery.conf.update(
         broker=app.config["CELERY_BROKER_URL"],
         backend=app.config["CELERY_RESULT_BACKEND"]
     )
@@ -19,8 +20,6 @@ def make_celery(app):
         def __call__(self, *args, **kwargs):
             with app.app_context():
                 return self.run(*args, **kwargs)
-    
+
     celery.Task = ContextTask
     return celery
-
-
