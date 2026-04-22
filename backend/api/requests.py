@@ -130,3 +130,14 @@ def download_result(request_id):
     except IOError as e:
         # If an error occurred during file reading
         return jsonify({"error": "Failed to read file", "exception": str(e)}), 500
+
+
+@req_blueprint.route('/status/<int:request_id>', methods=['GET'])
+@login_required
+def job_status(request_id):
+    req = Request.query.get(request_id)
+    if not req:
+        return jsonify({"error": "Request not found"}), 404
+    if req.owner_id != current_user.id:
+        return jsonify({"error": "Unauthorized"}), 403
+    return jsonify({"status": req.status})
