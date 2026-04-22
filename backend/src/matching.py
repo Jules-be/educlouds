@@ -10,13 +10,16 @@ MATCH_SCORE = {
 }
 
 
-def find_best_lender(estimated_workload):
+def find_best_lender(estimated_workload, exclude_lender_id=None):
     """
     Given a job's estimated workload (High/Medium/Low),
     find the best available lender from the database.
     Returns the winning Lender object, or None if no lender is available.
     """
-    available_lenders = Lender.query.filter_by(availability_status="Available").all()
+    query = Lender.query.filter_by(availability_status="Available")
+    if exclude_lender_id:
+        query = query.filter(Lender.id != exclude_lender_id)
+    available_lenders = query.all()
 
     if not available_lenders:
         return None
