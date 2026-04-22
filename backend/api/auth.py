@@ -1,7 +1,9 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 from ..database import db
 from flask_login import login_user, login_required, logout_user, current_user
-from ..models import User, UserType
+from ..models import User
+
+VALID_USER_TYPES = ["Lender", "Borrower"]
 
 from werkzeug.security import generate_password_hash, check_password_hash
 import logging
@@ -25,36 +27,27 @@ def register():
     return render_template("register.html", user=current_user)
     
 def handle_register_post():
-    user_type_id = request.form.get('user_type_id')
-    if user_type_id is None:
-        flash('User type is required.', category='error')
-        return render_template("register.html", user=current_user)
-
-    try:
-        user_type_id = int(user_type_id)
-    except ValueError:
-        flash('Invalid user type.', category='error')
-        return render_template("register.html", user=current_user)
-
+    user_type = request.form.get('user_type')
     email = request.form.get('email')
     password = request.form.get('password')
+    name = request.form.get('name', '')
 
-    if not is_valid_registration(user_type_id, email, password):
+    if not is_valid_registration(user_type, email, password):
         return render_template("register.html", user=current_user)
 
-    user = User(user_type_id=user_type_id, email=email,
+    user = User(user_type=user_type, email=email, name=name,
                 password=generate_password_hash(password, method='pbkdf2:sha256'))
     db.session.add(user)
     db.session.commit()
     flash('Registration successful! Please log in.', category='success')
     return redirect(url_for('auth.login'))
 
-def is_valid_registration(user_type_id, email, password):
+def is_valid_registration(user_type, email, password):
     existing_user = User.query.filter_by(email=email).first()
     if existing_user:
         flash('Email already exists!', category='error')
         return False
-    if user_type_id not in [UserType.LENDER, UserType.BORROWER]:
+    if user_type not in VALID_USER_TYPES:
         flash('Invalid user type', category='error')
         return False
     if len(email) < MIN_EMAIL_LENGTH:

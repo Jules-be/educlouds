@@ -10,8 +10,8 @@ def make_celery(app):
     can access the database and app config inside a worker.
     """
     celery.conf.update(
-        broker=app.config["CELERY_BROKER_URL"],
-        backend=app.config["CELERY_RESULT_BACKEND"]
+        broker_url=app.config["CELERY_BROKER_URL"],
+        result_backend=app.config["CELERY_RESULT_BACKEND"]
     )
 
     # This makes every Celery task run inside Flask's app context
