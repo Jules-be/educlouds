@@ -20,6 +20,7 @@
                 <th>Python Version</th>
                 <th>Status</th>
                 <th>Submitted</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody>
@@ -40,6 +41,15 @@
                     {% endif %}
                 </td>
                 <td>{{ job.created_at.strftime('%b %d %Y, %I:%M %p') }}</td>
+                <td>
+                    {% if job.status == 'initiated' %}
+                    <form method="POST" action="{{ url_for('views.accept_job', job_id=job.id)}}" style="display: inline">
+                        <button type="submit" class="btn btn-success btn-sm"> Accept</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('views.decline_job', job_id=job.id) }}" style="display: inline">
+                        <button type="submit" class="btn btn-danger btn-sm">Decline</button>
+                    </form>
+                </td>
             </tr>
             {% endfor %}
         </tbody>

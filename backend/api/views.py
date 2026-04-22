@@ -2,13 +2,13 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_required, current_user
 from ..models import Lender, Request
 from ..database import db
-import os
+from ..src.matching import find_best_lender
+from ..src.docker_tasks import run_job_pipeline
+import os 
 
 views = Blueprint('views', __name__)
 
 ALLOWED_EXTENSIONS = {'py'}
-
-
 
 
 
@@ -27,6 +27,8 @@ def home():
     user_type = current_user.user_type if current_user.is_authenticated else "Guest"
     
     return render_template("home.html", user=current_user, user_name=user_name, user_type=user_type)
+
+
 @views.route('/api/lenders/addResource', methods=['GET', 'POST'])
 @login_required
 def add_resource():
@@ -85,3 +87,52 @@ def lender_dashboard():
 
     assigned_jobs = Request.query.filter_by(lender_id=lender.id).order_by(Request.created_at.desc()).all()
     return render_template('dashboard.html', user=current_user, lender=lender, jobs=assigned_jobs)
+
+@views.route('/api/lenders/jobs/<int:job_id>/accept', methods=['POST'])
+@login_required
+def accept_job(job_id):
+    if current_user.user_type != "Lender":
+        flash("Unauthorized", category="error")
+        return redirect(url_for('views.home'))
+    
+    job = Request.query.get_or_404(job_id)
+    lender = Lender.query.filter_by(user_id=current_user.id).first()
+
+    if job.lender_id != lender.id:
+        flash("This Job is not assigned to you", category='error')
+        return redirect(url_for('views.lender_dashboard'))
+    
+    host = current_app.config['SSH_HOST']
+    user = current_app.config['SSH_USER']
+    key_path = current_app.config['SSH_KEY_PATH']
+
+    run_job_pipeline.delay(job_id, job.python_version, job.dependencies, host, user, key_path)
+    flash("Job accepted and queued for execution", category='success')
+    return redirect(url_for('views.lender_dashboard'))
+
+@views.route('/api/lenders/jobs/<int:job_id>/decline', methods=['POST'])
+@login_required
+def decline_job(job_id):
+    if current_user.user_type != "Lender":
+        flash("Unauthorized", category='error')
+        return redirect(url_for('views.home'))
+    
+    job = Request.query.get_or_404(job_id)
+    lender = Lender.query.filter_by(user_id=current_user.id).first()
+
+    if job.lender_id != lender.id:
+        flash("This job is not assigned to you", category='error')
+        return redirect(url_for('views.lender_dashboard'))
+    
+    job.lender_id = None
+    db.session.commit()
+
+    next_lender = find_best_lender(job.estimated_workload, exclude_lender_id=lender.id)
+    if next_lender:
+        job.lender_id = next_lender.id
+        db.session.commit()
+        flash("Job declined. Reassigned to another lender.", category='info')
+    else:
+        flash("Job declined. No other lenders available right now.", category='warning')
+    
+    return redirect(url_for('views.lender_dashboard'))
