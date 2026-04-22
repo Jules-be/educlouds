@@ -26,7 +26,7 @@
                     </ul>
                     <p class="card-text mt-3"><strong>Estimated Workload:</strong> {{ request.estimated_workload }}</p>
                     <p class="card-text"><strong>Python Version:</strong> {{ request.python_version }}</p>
-                    <p class="card-text"><strong>Status:</strong> {{ request.status | default('Pending', true) }}</p>
+                    <p class="card-text"><strong>Status:</strong> <span id="status-{{ request.id }}" data-request-id="{{ request.id }}">{{ request.status | default('Pending', true) }}</span></p>
                     {% if request.status == 'done' or request.status == 'error' %}
                         <a href="{{ url_for('request.download_result', request_id=request.id) }}" class="btn btn-primary">
                             Download Result
@@ -41,4 +41,31 @@
         </div>
     {% endif %}
 </div>
+<script>
+    function pollStatus(requestId) {
+        fetch(`/request/status/${requestId}`)
+        .then(response => response.json())
+        .then(data => {
+            const badge = document.getElementById(`status-${requestId}`)
+            if (badge) {
+                badge.textContent = data.status;
+            }
+            if (data.status == 'done' || data.status == 'error'){
+                location.reload();
+            }
+        })
+    }
+    document.addEventListener('DOMContentLoaded', function () {
+        const badges = document.querySelectorAll('[data-request-id]');
+        badges.forEach(function (badge) {
+            const requestId = badge.getAttribute('data-request-id');
+            const status = badge.textContent.trim();
+            if (status === 'initiated' || status === 'running') {
+                setInterval(function () {
+                    pollStatus(requestId);
+                }, 5000) ;
+            }
+        });
+    });
+</script>
 {% endblock %}
