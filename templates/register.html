@@ -7,10 +7,15 @@
         <h1 class="h3 mb-3 font-weight-normal">Register Educloud</h1>
         <form method="POST">
             <div class="form-group">
-                <select class="form-control" id="user_type_id" name="user_type_id">
-                    <option value="1">Lender</option>
-                    <option value="2">Borrower</option>
+                <select class="form-control" id="user_type" name="user_type">
+                    <option value="Lender">Lender</option>
+                    <option value="Borrower">Borrower</option>
                 </select>
+            </div>
+            <div class="form-group">
+                <label for="name" class="sr-only">Full Name</label>
+                <input type="text" id="name" name="name" class="form-control" placeholder="Enter full name" required>
+
             </div>
 
             <div class="form-group">
