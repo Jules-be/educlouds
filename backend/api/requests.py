@@ -14,7 +14,8 @@ ALLOWED_EXTENSIONS = {'py'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@req_blueprint.route('/new', methods= ['GET', 'POST'])
+@req_blueprint.route('/new', methods=['GET', 'POST'])
+@login_required
 def new_request():
     if request.method == 'POST':
         if current_user.user_type != "Borrower":
